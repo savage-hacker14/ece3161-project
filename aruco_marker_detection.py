@@ -15,7 +15,7 @@ on_raspi = True
 if (not on_raspi):
     path = "C:\\Users\\jacob\\Documents\\College\\UConn\\Undergrad Year 4\\Spring 2024\\ECE 3161\\Term Project\\raspi_camera_calibration\\"
 else:
-    path = "/home/jacob/git/ece3161-project"
+    path = "/home/jacob/git/ece3161-project/"
 
 camParams = sio.loadmat(path + "raspi_camera_params_opencv.mat")
 cameraMatrix = camParams['cameraMatrix']
