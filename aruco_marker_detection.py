@@ -11,7 +11,7 @@ import scipy.io as sio
 import numpy as np
 
 # Load camera parameters from MATLAB
-on_raspi = True
+on_raspi = False
 if (not on_raspi):
     path = "C:\\Users\\jacob\\Documents\\College\\UConn\\Undergrad Year 4\\Spring 2024\\ECE 3161\\Term Project\\raspi_camera_calibration\\"
 else:
@@ -22,7 +22,11 @@ cameraMatrix = camParams['cameraMatrix']
 distCoeffs = camParams['distortionCoefficients']
 
 # Start camera
-camera = cv2.VideoCapture(0)
+if (not on_raspi):
+    camera = cv2.VideoCapture(1, cv2.CAP_DSHOW)         # USB camera
+else:
+    camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+
 camera.set(3, 1920)
 camera.set(4, 1080)
 
@@ -39,36 +43,37 @@ i = 0
 
 while True:
     success, image = camera.read()
-    s = image.shape
+    if (success):
+        s = image.shape
 
-    # First we detect all markers in the frame
-    (corners, ids, rejected) = detector.detectMarkers(image)
- 
-    if len(corners) > 0: # we have detected something
-        ids = ids.flatten()
-        cv2.aruco.drawDetectedMarkers(image, corners, ids) # draw outlines for all 
+        # First we detect all markers in the frame
+        (corners, ids, rejected) = detector.detectMarkers(image)
+    
+        if len(corners) > 0: # we have detected something
+            ids = ids.flatten()
+            cv2.aruco.drawDetectedMarkers(image, corners, ids) # draw outlines for all 
 
-        # For every detected marker, we do pose estimation using its corners and find the rotational and translational vectors
-        for (markerCorner, markerID) in zip(corners, ids):
-            reshapedCorners = markerCorner.reshape((4, 2))
-            (tL, tR, bR, bL) = reshapedCorners
-            topLeft = [int(tL[0]), int(tL[1])]
-            
-            rvec, tvec, _ = cv2.aruco.estimatePoseSingleMarkers(markerCorner, markerLength, cameraMatrix, distCoeffs)
-            rvec = rvec[0][0]
-            tvec = tvec[0][0]
+            # For every detected marker, we do pose estimation using its corners and find the rotational and translational vectors
+            for (markerCorner, markerID) in zip(corners, ids):
+                reshapedCorners = markerCorner.reshape((4, 2))
+                (tL, tR, bR, bL) = reshapedCorners
+                topLeft = [int(tL[0]), int(tL[1])]
+                
+                rvec, tvec, _ = cv2.aruco.estimatePoseSingleMarkers(markerCorner, markerLength, cameraMatrix, distCoeffs)
+                rvec = rvec[0][0]
+                tvec = tvec[0][0]
 
-            # Printing distance on the image
-            cv2.putText(image, str(round(tvec[2], 2)), (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-            print("Marker detected! ID: {}, RVEC: {}, TVEC: {}".format(str(markerID), rvec, tvec))
+                # Printing distance on the image
+                cv2.putText(image, str(round(tvec[2], 2)), (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                print("Marker detected! ID: {}, RVEC: {}, TVEC: {}".format(str(markerID), rvec, tvec))
 
-        # Press 'a' key when detecting marker to save image. Only available when marker is detected
-        if cv2.waitKey(33) == ord('a'):
-            print("Taking ArUco pic {}...".format(i))
-            cv2.imwrite(path + "Images/aruco_image_{}.png".format(i), image)
-            i += 1
+            # Press 'a' key when detecting marker to save image. Only available when marker is detected
+            if cv2.waitKey(33) == ord('a'):
+                print("Taking ArUco pic {}...".format(i))
+                cv2.imwrite(path + "Images/aruco_image_{}.png".format(i), image)
+                i += 1
 
-    cv2.imshow("ArUco Detection", image)
+        cv2.imshow("ArUco Detection", image)
 
     if cv2.waitKey(1) == 27: # ESC key to exit
         break
