@@ -17,9 +17,9 @@ cameraMatrix = camParams['cameraMatrix']
 distCoeffs = camParams['distortionCoefficients']
 
 # Start camera
-camera = cv2.VideoCapture(1)         # USB camera
-camera.set(3, 1920)
-camera.set(4, 1080)
+camera = cv2.VideoCapture(0)         # USB camera
+camera.set(3, 640)
+camera.set(4, 480)
 
 # Set up the ArUco dictionary and detector object
 aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_250)
@@ -34,10 +34,9 @@ i = 0
 
 while True:
     success, image = camera.read()
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    print(f"Success: {success}")
     if (success):
         s = image.shape
+        #image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
         # First we detect all markers in the frame
         (corners, ids, rejected) = detector.detectMarkers(image)
