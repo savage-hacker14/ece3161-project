@@ -32,6 +32,9 @@ print("Reading from camera...\n")
 # To keep track of saved images
 i = 0
 
+# ** Scaling factor testing
+scale = 1400 / 279.4
+
 while True:
     success, image = camera.read()
     if (success):
@@ -56,7 +59,7 @@ while True:
                 tvec = tvec[0][0]
 
                 # Printing distance on the image
-                cv2.putText(image, str(round(tvec[2], 2)), (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                cv2.putText(image, str(round(tvec[2] / scale, 2)), (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                 print("Marker detected! ID: {}, RVEC: {}, TVEC: {}".format(str(markerID), rvec, tvec))
 
             # Press 'a' key when detecting marker to save image. Only available when marker is detected
