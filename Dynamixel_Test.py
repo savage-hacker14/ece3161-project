@@ -48,6 +48,9 @@ else:
 
 from dynamixel_sdk import *                    # Uses Dynamixel SDK library
 
+# Set target hardware
+on_raspi = True
+
 # Control table address
 ADDR_MX_TORQUE_ENABLE      = 24               # This was configured WRONG, should be correct now
 ADDR_MX_GOAL_POSITION      = 30
@@ -59,8 +62,11 @@ PROTOCOL_VERSION            = 1.0               # Our Dynamixels use Protocol 1.
 # Default setting
 DXL_ID                      = 1                # Dynamixel ID : 1 (shoulder, angle theta)
 BAUDRATE                    = 57600             # Dynamixel default baudrate : 57600
-DEVICENAME                  = "COM7"    # Check which port is being used on your controller
-                                                # ex) Windows: "COM1"   Linux: "/dev/ttyUSB0" Mac: "/dev/tty.usbserial-*"
+
+if (not on_raspi):
+    DEVICENAME              = "COM7"    # Port used for serial communication
+else:
+    DEVICENAME              = "/dev/ttyUSB0"
 ENCODER_RES                 = 4095
 TORQUE_ENABLE               = 1                 # Value for enabling the torque
 TORQUE_DISABLE              = 0                 # Value for disabling the torque
