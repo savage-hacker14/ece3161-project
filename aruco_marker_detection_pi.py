@@ -33,7 +33,11 @@ print("Reading from camera...\n")
 i = 0
 
 # ** Scaling factor testing
-scale = 1400 / 279.4
+USE_SCALING = False
+if (USE_SCALING):
+    scale = 1400 / 279.4
+else:
+    scale = 1
 
 while True:
     success, image = camera.read()
