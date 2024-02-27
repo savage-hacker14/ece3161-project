@@ -41,7 +41,7 @@ while True:
     if key == ord(' '):
         # Save the frame
         frame_count += 1
-        frame_filename = f"{save_path}frame_{frame_count}.png"
+        frame_filename = f"{save_path}frame_{frame_count}_{IMG_SIZE[0]}x{IMG_SIZE[1]}.png"
         cv2.imwrite(frame_filename, resized_image)
         print(f"Frame saved: {frame_filename}")
 
