@@ -12,7 +12,7 @@ import scipy.io as sio
 import numpy as np
 
 # Load camera parameters from MATLAB
-camParams = sio.loadmat("raspi_camera_params_640x480_opencv.mat")
+camParams = sio.loadmat("raspi_camera_params_640x480_opencv_v2.mat")
 cameraMatrix = camParams['cameraMatrix']
 distCoeffs = camParams['distortionCoefficients']
 
