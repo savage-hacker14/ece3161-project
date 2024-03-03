@@ -59,6 +59,7 @@ packetHandler = PacketHandler(PROTOCOL_VERSION)
 
 # Custom functions
 def init_robot():
+    """ Initialize robot arm by setting hard limits and moving to a neutral position """
     # TODO: Set hard limits for body and shoulder joints
 
 
@@ -66,6 +67,7 @@ def init_robot():
     pass
 
 def _rad_to_encoder(motor_id, rad):
+    """ Helper function to convert position [rad] to encoder position to send to motor """
     # Compute pre offset encoder position
     pos = rad * (ENCODER_RES / (2 * math.pi))
 
@@ -79,13 +81,15 @@ def _rad_to_encoder(motor_id, rad):
 
 
 def _error_handler(dxl_comm_result, dxl_error):
+    """ Helper method that raises an exception if there is a communication or response error """
     if dxl_comm_result != COMM_SUCCESS:
-        raise AttributeError(f"Comm error: {packetHandler.getTxRxResult(dxl_comm_result)}")
+        raise Exception(f"Comm error: {packetHandler.getTxRxResult(dxl_comm_result)}")
     elif dxl_error != 0:
-        raise AttributeError(f"Hardware error {dxl_error}: {packetHandler.getRxPacketError(dxl_error)}")
+        raise Exception(f"Hardware error {dxl_error}: {packetHandler.getRxPacketError(dxl_error)}")
 
 
 def _set_positon(motor_id, position_rad):
+    """ Helper method that command a given motor to a given position [rad] """
     # TODO: Turn on motor_id LED
     dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, motor_id, ADDR_MX_LED, MODE_ENABLE)
     _error_handler(dxl_comm_result, dxl_error)
@@ -102,7 +106,6 @@ def _set_positon(motor_id, position_rad):
 
 def set_pose(phi_rad, theta_rad):
     """ Move the body and shoulder joints to the specified position """
-
     # Move body joint
     _set_positon(DXL_BODY_ID, phi_rad)
 
