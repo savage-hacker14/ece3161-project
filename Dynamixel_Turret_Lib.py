@@ -40,10 +40,10 @@ MODE_DISABLE                = 0                 # Value for disabling the torque
 # Define hard limits for body and shoulder joints
 # Body joint: Fixed to Waffle plate base, controls the "roll" of the turret arm
 # Shoulder join: Connected to the body joint, controls the turret firing arc
-BODY_CW_LIM                 = 788               # CHECK THIS
-BODY_CCW_LIM                = 3288              # CHECK THIS
-SHOULDER_CW_LIM             = 1100              # CHECK THIS
-SHOULDER_CCW_LIM            = 1820              # CHECK THIS
+SHOULDER_CW_LIM             = 788               # CHECK THIS
+SHOULDER_CCW_LIM            = 3288              # CHECK THIS
+BODY_CW_LIM                 = 1100              # CHECK THIS
+BODY_CCW_LIM                = 1820              # CHECK THIS
 
 # Define motor angle offsets (for easier calculation and custom frame of reference)
 BODY_OFFSET                 = 0                 # [encoder counts]

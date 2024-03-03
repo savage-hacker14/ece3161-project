@@ -29,9 +29,9 @@ else:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
         return ch
 
-# Define body and shoulder joint ranges [rad]
-BODY_RANGE      = []
-SHOULDER_RANGE  = []
+# Define body and shoulder joint ranges [CW limit, CCW limit], [rad]
+BODY_RANGE      = [1.687379, 2.791845]          # 1100, 1820 encoder counts
+SHOULDER_RANGE  = [1.208777, 5.043729]          # 788, 3288 encoder counts
 
 # Define a function to generate a random VALID position for the joint (within angle limits)
 def rand_pos(motor_id):
@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
     # Main loop
     print("Press ESC to quit!")
-    while (1):
+    while (True):
         # Check for ESC key press
         if getch() == chr(0x1b):
             break
