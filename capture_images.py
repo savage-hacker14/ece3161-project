@@ -4,7 +4,7 @@ import cv2
 camera = cv2.VideoCapture(0)
 
 # Initialize camera feed
-IMG_SIZE = (640, 480)
+IMG_SIZE = (1920, 1080)
 camera.set(3, IMG_SIZE[0])
 camera.set(4, IMG_SIZE[1])
 

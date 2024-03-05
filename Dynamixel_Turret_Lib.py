@@ -2,6 +2,24 @@
 # ECE 3161 - Term Project
 # Written by Jacob Krucinski
 
+# Set up stdin/out
+import os
+
+if os.name == 'nt':
+    import msvcrt
+    def getch():
+        return msvcrt.getch().decode()
+else:
+    import sys, tty, termios
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    def getch():
+        try:
+            tty.setraw(sys.stdin.fileno())
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        return ch
 
 # Import main Dynamixel SDK
 from dynamixel_sdk import *
@@ -14,9 +32,11 @@ ON_RASPI = True
 
 # Control table address
 ADDR_MX_TORQUE_ENABLE      = 24
+ADDR_MX_CW_LIMIT           = 6
+ADDR_MX_CCW_LIMIT          = 8
 ADDR_MX_GOAL_POSITION      = 30
 ADDR_MX_PRESENT_POSITION   = 36
-ADDR_MX_LED                = 99                 # CHECK THIS
+ADDR_MX_LED                = 25
 
 # Protocol version
 PROTOCOL_VERSION           = 1.0                # Our Dynamixels use Protocol 1.0
@@ -42,12 +62,12 @@ MODE_DISABLE                = 0                 # Value for disabling the torque
 # Shoulder join: Connected to the body joint, controls the turret firing arc
 SHOULDER_CW_LIM             = 788               # CHECK THIS
 SHOULDER_CCW_LIM            = 3288              # CHECK THIS
-BODY_CW_LIM                 = 1100              # CHECK THIS
-BODY_CCW_LIM                = 1820              # CHECK THIS
+BODY_CW_LIM                 = 1500              # 131.84 deg
+BODY_CCW_LIM                = 2600              # 228.52 deg
 
 # Define motor angle offsets (for easier calculation and custom frame of reference)
-BODY_OFFSET                 = 0                 # [encoder counts]
-SHOULDER_OFFSET             = 0                 # [encoder counts]
+BODY_OFFSET                 = 2047              # [encoder counts], 180 deg
+SHOULDER_OFFSET             = 2047              # [encoder counts], 180 deg
 
 # Define global port handler
 portHandler = PortHandler(DEVICENAME)
@@ -58,13 +78,97 @@ packetHandler = PacketHandler(PROTOCOL_VERSION)
 
 
 # Custom functions
+def _error_handler(dxl_comm_result, dxl_error):
+    """ Helper method that raises an exception if there is a communication or response error """
+    if dxl_comm_result != COMM_SUCCESS:
+        raise Exception(f"Comm error: {packetHandler.getTxRxResult(dxl_comm_result)}")
+    elif dxl_error != 0:
+        raise Exception(f"Hardware error {dxl_error}: {packetHandler.getRxPacketError(dxl_error)}")
+    else:
+        return None
+
+
+def _read(n_bytes, motor_id, addr):
+    """ Read n bytes from Dynamixel motors"""
+    if (n_bytes == 1):
+        read_val, dxl_comm_result, dxl_error = packetHandler.read1ByteTxRx(portHandler, motor_id, addr)
+        _error_handler(dxl_comm_result, dxl_error)
+    elif (n_bytes == 2):
+        read_val, dxl_comm_result, dxl_error = packetHandler.read2ByteTxRx(portHandler, motor_id, addr)
+        _error_handler(dxl_comm_result, dxl_error)
+    elif (n_bytes == 4):
+        read_val, dxl_comm_result, dxl_error = packetHandler.read4ByteTxRx(portHandler, motor_id, addr)
+        _error_handler(dxl_comm_result, dxl_error)
+    else:
+        raise ValueError(f"{n_bytes} bytes is not a valid number of bytes to read")
+        read_val = None
+    
+    return read_val
+
+
+def _write(n_bytes, motor_id, addr, value):
+    if (n_bytes == 1):
+        dxl_comm_result, dxl_error = packetHandler.write1ByteTxRx(portHandler, motor_id, addr, value)
+        _error_handler(dxl_comm_result, dxl_error)
+    elif (n_bytes == 2):
+        dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, motor_id, addr, value)
+        _error_handler(dxl_comm_result, dxl_error)
+    elif (n_bytes == 4):
+        dxl_comm_result, dxl_error = packetHandler.write4ByteTxRx(portHandler, motor_id, addr, value)
+        _error_handler(dxl_comm_result, dxl_error)
+    else:
+        raise ValueError(f"{n_bytes} bytes is not a valid number of bytes to write")
+        read_value = None
+
+
 def init_robot():
     """ Initialize robot arm by setting hard limits and moving to a neutral position """
-    # TODO: Set hard limits for body and shoulder joints
+    # Open port
+    if portHandler.openPort():
+        print("Succeeded to open the port")
+    else:
+        print("Failed to open the port")
+        print("Press any key to terminate...")
+        getch()
+        quit()
 
+    # Set port baudrate
+    if portHandler.setBaudRate(BAUDRATE):
+        print("Succeeded to change the baudrate")
+    else:
+        print("Failed to change the baudrate")
+        print("Press any key to terminate...")
+        getch()
+        quit()
+        
+    # Disable torque mode for both joints to set hard limits
+    _write(1, DXL_BODY_ID, ADDR_MX_TORQUE_ENABLE, MODE_DISABLE)
+    _write(1, DXL_SHOULDER_ID, ADDR_MX_TORQUE_ENABLE, MODE_DISABLE)
+
+    
+    # TODO: Set hard limits for body and shoulder joints (if not already set
+    curr_cw_lim_body      = _read(2, DXL_BODY_ID, ADDR_MX_CW_LIMIT)
+    curr_ccw_lim_body     = _read(2, DXL_BODY_ID, ADDR_MX_CCW_LIMIT)
+    curr_cw_lim_shoulder  = _read(2, DXL_SHOULDER_ID, ADDR_MX_CW_LIMIT)
+    curr_ccw_lim_shoulder = _read(2, DXL_SHOULDER_ID, ADDR_MX_CCW_LIMIT)
+    print(curr_cw_lim_body, curr_ccw_lim_body, curr_cw_lim_shoulder, curr_ccw_lim_shoulder)
+    if (curr_cw_lim_body != BODY_CW_LIM):
+        _write(2, DXL_BODY_ID, ADDR_MX_CW_LIMIT, BODY_CW_LIM)
+    if (curr_ccw_lim_body != BODY_CCW_LIM):
+        _write(2, DXL_BODY_ID, ADDR_MX_CCW_LIMIT, BODY_CCW_LIM)
+    if (curr_cw_lim_shoulder != SHOULDER_CW_LIM):
+        _write(2, DXL_SHOULDER_ID, ADDR_MX_CW_LIMIT, BODY_CW_LIM)
+    if (curr_ccw_lim_shoulder != SHOULDER_CCW_LIM):
+        _write(2, DXL_SHOULDER_ID, ADDR_MX_CCW_LIMIT, BODY_CCW_LIM)
+
+
+    # Enable torque mode for both joints
+    _write(1, DXL_BODY_ID, ADDR_MX_TORQUE_ENABLE, MODE_ENABLE)
+    _write(1, DXL_SHOULDER_ID, ADDR_MX_TORQUE_ENABLE, MODE_ENABLE)
 
     # TODO: Go to neutral position (phi = 0, theta = pi rad)
-    pass
+    set_pose(phi_rad=0, theta_rad=0)
+
 
 def _rad_to_encoder(motor_id, rad):
     """ Helper function to convert position [rad] to encoder position to send to motor """
@@ -72,35 +176,28 @@ def _rad_to_encoder(motor_id, rad):
     pos = rad * (ENCODER_RES / (2 * math.pi))
 
     # Add offset based on motor id
+    print(f"Pos: {pos}")
     if (motor_id == DXL_BODY_ID): 
         pos += BODY_OFFSET
     else:
         pos += SHOULDER_OFFSET
 
-    return pos
-
-
-def _error_handler(dxl_comm_result, dxl_error):
-    """ Helper method that raises an exception if there is a communication or response error """
-    if dxl_comm_result != COMM_SUCCESS:
-        raise Exception(f"Comm error: {packetHandler.getTxRxResult(dxl_comm_result)}")
-    elif dxl_error != 0:
-        raise Exception(f"Hardware error {dxl_error}: {packetHandler.getRxPacketError(dxl_error)}")
+    return int(pos)
 
 
 def _set_positon(motor_id, position_rad):
     """ Helper method that command a given motor to a given position [rad] """
     # TODO: Turn on motor_id LED
-    dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, motor_id, ADDR_MX_LED, MODE_ENABLE)
+    dxl_comm_result, dxl_error = packetHandler.write1ByteTxRx(portHandler, motor_id, ADDR_MX_LED, MODE_ENABLE)
     _error_handler(dxl_comm_result, dxl_error)
 
     # TODO: Write goal position
-    encoder_pos = _rad_to_encoder(position_rad, motor_id)
+    encoder_pos = _rad_to_encoder(motor_id, position_rad)
     dxl_comm_result, dxl_error = packetHandler.write4ByteTxRx(portHandler, motor_id, ADDR_MX_GOAL_POSITION, encoder_pos)
     _error_handler(dxl_comm_result, dxl_error)
 
     # TODO: Turn off motor_id LED
-    dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, motor_id, ADDR_MX_LED, MODE_DISABLE)
+    dxl_comm_result, dxl_error = packetHandler.write1ByteTxRx(portHandler, motor_id, ADDR_MX_LED, MODE_DISABLE)
     _error_handler(dxl_comm_result, dxl_error)
 
 

@@ -5,6 +5,7 @@
 # Import custom library 
 from Dynamixel_Turret_Lib import *
 
+
 # Import random library (for random position definition) and math library
 import random
 import math
@@ -28,6 +29,9 @@ else:
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
         return ch
+    
+# Import Dyanmixel library again
+from dynamixel_sdk import *                    # Uses Dynamixel SDK library
 
 # Define body and shoulder joint ranges [CW limit, CCW limit], [rad]
 BODY_RANGE      = [1.687379, 2.791845]          # 1100, 1820 encoder counts
@@ -50,18 +54,18 @@ if __name__ == "__main__":
     init_robot()
 
     # Main loop
-    print("Press ESC to quit!")
-    while (True):
-        # Check for ESC key press
-        if getch() == chr(0x1b):
-            break
-
-        # Generate random positions
-        phi     = rand_pos(DXL_BODY_ID)
-        theta   = rand_pos(DXL_SHOULDER_ID)
-
-        # Send goal positions to both body and shoulder joints
-        set_pose(phi, theta)
-
-        # Wait for 5 seconds
-        time.sleep(5)
+#     print("Press ESC to quit!")
+#     while (True):
+#         # Check for ESC key press
+#         if getch() == chr(0x1b):
+#             break
+# 
+#         # Generate random positions
+#         phi     = rand_pos(DXL_BODY_ID)
+#         theta   = rand_pos(DXL_SHOULDER_ID)
+# 
+#         # Send goal positions to both body and shoulder joints
+#         set_pose(phi, theta)
+# 
+#         # Wait for 5 seconds
+#         time.sleep(5)
