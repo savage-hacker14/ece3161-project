@@ -34,8 +34,10 @@ else:
 from dynamixel_sdk import *                    # Uses Dynamixel SDK library
 
 # Define body and shoulder joint ranges [CW limit, CCW limit], [rad]
-BODY_RANGE      = [1.687379, 2.791845]          # 1100, 1820 encoder counts
-SHOULDER_RANGE  = [1.208777, 5.043729]          # 788, 3288 encoder counts
+BODY_RANGE      = [(1500 - BODY_OFFSET)/ENCODER_RES * 2 * math.pi,
+                   (2600 - BODY_OFFSET)/ENCODER_RES * 2 * math.pi]           # 1500 - 2047 (offset) = -547, 2600 - 2047 = 553 encoder counts
+SHOULDER_RANGE  = [(788 - BODY_OFFSET)/ENCODER_RES * 2 * math.pi,
+                   (3288 - BODY_OFFSET)/ENCODER_RES * 2 * math.pi]           # 788 - 2047 (offset) = , 3288 encoder counts
 
 # Define a function to generate a random VALID position for the joint (within angle limits)
 def rand_pos(motor_id):
@@ -44,28 +46,28 @@ def rand_pos(motor_id):
     elif (motor_id == DXL_SHOULDER_ID):
         rand_rad =  random.random() * (SHOULDER_RANGE[1] - SHOULDER_RANGE[0]) + SHOULDER_RANGE[0]
 
-    # Convert radian position to encoder position
-    return rand_rad * (ENCODER_RES / (2 * math.pi)) 
+    # Return random position [rad]
+    return rand_rad
 
 
 # Main code
 if __name__ == "__main__":
     # Call init function
+    print("Initializing robot...")
     init_robot()
+    time.sleep(3)
 
     # Main loop
-#     print("Press ESC to quit!")
-#     while (True):
-#         # Check for ESC key press
-#         if getch() == chr(0x1b):
-#             break
-# 
-#         # Generate random positions
-#         phi     = rand_pos(DXL_BODY_ID)
-#         theta   = rand_pos(DXL_SHOULDER_ID)
-# 
-#         # Send goal positions to both body and shoulder joints
-#         set_pose(phi, theta)
-# 
-#         # Wait for 5 seconds
-#         time.sleep(5)
+    while (True):
+        # Check for ESC key press
+        print("Press any key to generate new pose (or press ESC to quit)")
+        if getch() == chr(0x1b):
+            break
+
+        # Generate random positions
+        phi     = rand_pos(DXL_BODY_ID)
+        theta   = rand_pos(DXL_SHOULDER_ID)
+
+        # Send goal positions to both body and shoulder joints
+        print(f"Phi: {phi}, Theta: {theta}")
+        set_pose(phi, theta)

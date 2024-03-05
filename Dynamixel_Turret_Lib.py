@@ -176,7 +176,6 @@ def _rad_to_encoder(motor_id, rad):
     pos = rad * (ENCODER_RES / (2 * math.pi))
 
     # Add offset based on motor id
-    print(f"Pos: {pos}")
     if (motor_id == DXL_BODY_ID): 
         pos += BODY_OFFSET
     else:
@@ -193,6 +192,7 @@ def _set_positon(motor_id, position_rad):
 
     # TODO: Write goal position
     encoder_pos = _rad_to_encoder(motor_id, position_rad)
+    print(f"Encoder pos: {encoder_pos}")
     dxl_comm_result, dxl_error = packetHandler.write4ByteTxRx(portHandler, motor_id, ADDR_MX_GOAL_POSITION, encoder_pos)
     _error_handler(dxl_comm_result, dxl_error)
 
