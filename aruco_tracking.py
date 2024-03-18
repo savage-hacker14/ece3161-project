@@ -34,7 +34,7 @@ i = 0
 
 # Define tracking status (as a boolean)
 TRACKING  = False
-COL_RED   = (255, 0, 0)
+COL_RED   = (0, 0, 255)       # BGR format
 COL_GREEN = (0, 255, 0)
 
 # ** Scaling factor testing
@@ -73,24 +73,27 @@ while True:
 
                 # Printing distance on the image
                 cv2.putText(image, str(round(tvec[2] / scale, 2)), (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COL_RED, 2)
-                print("Marker detected! ID: {}, RVEC: {}, TVEC: {}".format(str(markerID), rvec, tvec))
-
-        # Add tracking mode text to top left corner of frame
-        if (TRACKING):
-            cv2.putText(image, "Tracking: ON", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COL_GREEN, 1)
+                #print("Marker detected! ID: {}, RVEC: {}, TVEC: {}".format(str(markerID), rvec, tvec))
+                
+            # Enable/disable tracking via space bar (ONLY if a tag is detected)
+            if cv2.waitKey(1) == ord(' '):
+                TRACKING = not TRACKING
         else:
-            cv2.putText(image, "Tracking: OFF", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COL_RED, 1)
+            TRACKING = False
+
+        # Add tracking mode text to top left corner of frame - ONLY WHEN TARGET IS DETECTED
+        if (TRACKING):
+            cv2.putText(image, "Tracking: ON", (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COL_GREEN, 2)
+        else:
+            cv2.putText(image, "Tracking: OFF", (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COL_RED, 2)
 
         # Show final image in window
         cv2.imshow("ArUco Detection", image)
-
-        # Enable/disable tracking via space bar (ONLY if a tag is detected)
-        if cv2.waitKey(1) == ord(' '):
-            TRACKING = not TRACKING
 
 
     if cv2.waitKey(1) == 27: # ESC key to exit
         break
 
 print("Camera terminated. Finished reading!\n")
+camera.release()
 cv2.destroyAllWindows()
