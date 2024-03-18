@@ -6,10 +6,17 @@ Date last modified: 03/18/24
 Description: Have robot shoulder joint TRACK the detected ArUco tag
 '''
 
-# Import image progressing libraries
+# Import image progressing libraries and GPIO for ring light
 import cv2
 import scipy.io as sio
 import numpy as np
+import RPi.GPIO as GPIO
+
+# Set up GPIO
+GPIO_LIGHT = 18
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(GPIO_LIGHT, GPIO.OUT)
+
 
 # Load camera parameters from MATLAB
 camParams = sio.loadmat("raspi_camera_params_640x480_opencv_v2.mat")
@@ -84,8 +91,10 @@ while True:
         # Add tracking mode text to top left corner of frame - ONLY WHEN TARGET IS DETECTED
         if (TRACKING):
             cv2.putText(image, "Tracking: ON", (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COL_GREEN, 2)
+            GPIO.output(GPIO_LIGHT, GPIO.HIGH)
         else:
             cv2.putText(image, "Tracking: OFF", (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COL_RED, 2)
+            GPIO.output(GPIO_LIGHT, GPIO.LOW)
 
         # Show final image in window
         cv2.imshow("ArUco Detection", image)
@@ -94,6 +103,8 @@ while True:
     if cv2.waitKey(1) == 27: # ESC key to exit
         break
 
+# Terminate program
 print("Camera terminated. Finished reading!\n")
 camera.release()
 cv2.destroyAllWindows()
+GPIO.output(GPIO_LIGHT, GPIO.LOW)
