@@ -10,7 +10,13 @@ Description: Have robot shoulder joint TRACK the detected ArUco tag
 import cv2
 import scipy.io as sio
 import numpy as np
+import math
 import RPi.GPIO as GPIO
+
+
+# Import custom turret library 
+from Dynamixel_Turret_Lib import *
+
 
 # Set up GPIO
 GPIO_LIGHT = 18
@@ -50,7 +56,22 @@ if (USE_SCALING):
     scale = 1400 / 279.4
 else:
     scale = 1
+    
+# Define function to convert tvec to polar coordinates
+# Axes: X - To the left of the camera (to the right in image frame)
+#       Y - Down towards the floor
+#       Z - Straight out from the camera lens
+def tvec_to_polar(tvec):
+    x, y, z = tvec
+    r = math.sqrt(x**2 + z**2)
+    theta = math.atan2(x, z)   # y, x order
+    
+    return [r, theta]
 
+# Init robot
+init_robot()
+
+# Main vision control loop
 while True:
     success, image = camera.read()
 
@@ -77,10 +98,19 @@ while True:
                 rvec, tvec, _ = cv2.aruco.estimatePoseSingleMarkers(markerCorner, markerLength, cameraMatrix, distCoeffs)
                 rvec = rvec[0][0]
                 tvec = tvec[0][0]
+                
+                # Convert to polar coordinates
+                tvec_polar = tvec_to_polar(tvec)
+                
+                # Set shoulder position
+                if (TRACKING):
+                    set_position(DXL_BODY_ID, -tvec_polar[1])
 
                 # Printing distance on the image
-                cv2.putText(image, str(round(tvec[2] / scale, 2)), (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COL_RED, 2)
+                cv2.putText(image, str(round(tvec_polar[0] / scale, 2)), (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COL_RED, 2)
                 #print("Marker detected! ID: {}, RVEC: {}, TVEC: {}".format(str(markerID), rvec, tvec))
+                #print(f"TVEC: {tvec}")
+                #print(f"TVEC Polar: r={tvec_polar[0]}, theta={tvec_polar[1] * (180/math.pi)} deg")
                 
             # Enable/disable tracking via space bar (ONLY if a tag is detected)
             if cv2.waitKey(1) == ord(' '):

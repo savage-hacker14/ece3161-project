@@ -184,7 +184,7 @@ def _rad_to_encoder(motor_id, rad):
     return int(pos)
 
 
-def _set_positon(motor_id, position_rad):
+def set_position(motor_id, position_rad):
     """ Helper method that command a given motor to a given position [rad] """
     # TODO: Turn on motor_id LED
     dxl_comm_result, dxl_error = packetHandler.write1ByteTxRx(portHandler, motor_id, ADDR_MX_LED, MODE_ENABLE)
@@ -192,7 +192,7 @@ def _set_positon(motor_id, position_rad):
 
     # TODO: Write goal position
     encoder_pos = _rad_to_encoder(motor_id, position_rad)
-    print(f"Encoder pos: {encoder_pos}")
+    #print(f"Encoder pos: {encoder_pos}")
     dxl_comm_result, dxl_error = packetHandler.write4ByteTxRx(portHandler, motor_id, ADDR_MX_GOAL_POSITION, encoder_pos)
     _error_handler(dxl_comm_result, dxl_error)
 
@@ -204,7 +204,7 @@ def _set_positon(motor_id, position_rad):
 def set_pose(phi_rad, theta_rad):
     """ Move the body and shoulder joints to the specified position """
     # Move body joint
-    _set_positon(DXL_BODY_ID, phi_rad)
+    set_position(DXL_BODY_ID, phi_rad)
 
     # Move shoulder joint
-    _set_positon(DXL_SHOULDER_ID, theta_rad)
+    set_position(DXL_SHOULDER_ID, theta_rad)
