@@ -46,6 +46,10 @@ else:
 
 while True:
     success, image = camera.read()
+
+    # Make sure to rotate frame 180 deg
+    image = cv2.rotate(image, cv2.ROTATE_180)
+
     if (success):
         s = image.shape
         #image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
