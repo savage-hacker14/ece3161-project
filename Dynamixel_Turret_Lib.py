@@ -27,6 +27,10 @@ from dynamixel_sdk import *
 # Import math library
 import math
 
+# Import GPIO library
+#import RPi.GPIO as GPIO
+import pigpio
+
 # Set target hardware
 ON_RASPI = True
 
@@ -68,6 +72,11 @@ BODY_CCW_LIM                = 2600              # 228.52 deg
 # Define motor angle offsets (for easier calculation and custom frame of reference)
 BODY_OFFSET                 = 2047              # [encoder counts], 180 deg
 SHOULDER_OFFSET             = 2047              # [encoder counts], 180 deg
+
+# Define GPIO pins
+GPIO_LIGHT                  = 18
+GPIO_MOTOR_IN1              = 12                # CHECK THIS (should be PWM compatible)
+GPIO_MOTOR_IN2              = 13                # CHECK THIS (should be PWM compatible)
 
 # Define global port handler
 portHandler = PortHandler(DEVICENAME)
@@ -122,7 +131,11 @@ def _write(n_bytes, motor_id, addr, value):
 
 
 def init_robot():
-    """ Initialize robot arm by setting hard limits and moving to a neutral position """
+    """ 
+    Initialize robot arm by setting hard limits and moving to a neutral position.
+    Also, set up GPIO pins for ring light and turret motor.
+    """
+
     # Open port
     if portHandler.openPort():
         print("Succeeded to open the port")
@@ -146,7 +159,7 @@ def init_robot():
     _write(1, DXL_SHOULDER_ID, ADDR_MX_TORQUE_ENABLE, MODE_DISABLE)
 
     
-    # TODO: Set hard limits for body and shoulder joints (if not already set
+    # Set hard limits for body and shoulder joints (if not already set
     curr_cw_lim_body      = _read(2, DXL_BODY_ID, ADDR_MX_CW_LIMIT)
     curr_ccw_lim_body     = _read(2, DXL_BODY_ID, ADDR_MX_CCW_LIMIT)
     curr_cw_lim_shoulder  = _read(2, DXL_SHOULDER_ID, ADDR_MX_CW_LIMIT)
@@ -166,8 +179,14 @@ def init_robot():
     _write(1, DXL_BODY_ID, ADDR_MX_TORQUE_ENABLE, MODE_ENABLE)
     _write(1, DXL_SHOULDER_ID, ADDR_MX_TORQUE_ENABLE, MODE_ENABLE)
 
-    # TODO: Go to neutral position (phi = 0, theta = pi rad)
+    # Go to neutral position (phi = 0, theta = pi rad)
     set_pose(phi_rad=0, theta_rad=0)
+
+    # Set up GPIO 
+    pi_gpio = pigpio.pi()
+    pi_gpio.set_mode(GPIO_LIGHT, pigpio.OUTPUT)
+    pi_gpio.set_mode(GPIO_MOTOR_IN1, pigpio.OUTPUT)
+    pi_gpio.set_mode(GPIO_MOTOR_IN2, pigpio.OUTPUT)
 
 
 def _rad_to_encoder(motor_id, rad):
@@ -208,3 +227,12 @@ def set_pose(phi_rad, theta_rad):
 
     # Move shoulder joint
     set_position(DXL_SHOULDER_ID, theta_rad)
+
+
+# Turret firing methods
+def fire_turret():
+    """ 
+    Spin the NXT motor ~1 rotation to fire the loaded ball and 
+    to reload the mechanism 
+    """
+

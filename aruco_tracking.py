@@ -17,13 +17,6 @@ import RPi.GPIO as GPIO
 # Import custom turret library 
 from Dynamixel_Turret_Lib import *
 
-
-# Set up GPIO
-GPIO_LIGHT = 18
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(GPIO_LIGHT, GPIO.OUT)
-
-
 # Load camera parameters from MATLAB
 camParams = sio.loadmat("raspi_camera_params_640x480_opencv_v2.mat")
 cameraMatrix = camParams['cameraMatrix']
@@ -68,7 +61,7 @@ def tvec_to_polar(tvec):
     
     return [r, theta]
 
-# Init robot
+# Init robot and GPIO
 init_robot()
 
 # Main vision control loop
