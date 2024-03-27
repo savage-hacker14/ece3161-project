@@ -114,10 +114,10 @@ while True:
         # Add tracking mode text to top left corner of frame - ONLY WHEN TARGET IS DETECTED
         if (TRACKING):
             cv2.putText(image, "Tracking: ON", (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COL_GREEN, 2)
-            GPIO.output(GPIO_LIGHT, GPIO.HIGH)
+            pi_gpio.write(GPIO_LIGHT, MODE_ENABLE)
         else:
             cv2.putText(image, "Tracking: OFF", (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COL_RED, 2)
-            GPIO.output(GPIO_LIGHT, GPIO.LOW)
+            pi_gpio.write(GPIO_LIGHT, MODE_DISABLE)
 
         # Show final image in window
         cv2.imshow("ArUco Detection", image)
@@ -130,4 +130,4 @@ while True:
 print("Camera terminated. Finished reading!\n")
 camera.release()
 cv2.destroyAllWindows()
-GPIO.output(GPIO_LIGHT, GPIO.LOW)
+pi_gpio.write(GPIO_LIGHT, MODE_DISABLE)

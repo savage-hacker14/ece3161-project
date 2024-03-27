@@ -73,10 +73,11 @@ BODY_CCW_LIM                = 2600              # 228.52 deg
 BODY_OFFSET                 = 2047              # [encoder counts], 180 deg
 SHOULDER_OFFSET             = 2047              # [encoder counts], 180 deg
 
-# Define GPIO pins
+# Define GPIO pins and global GPIO object
 GPIO_LIGHT                  = 18
-GPIO_MOTOR_IN1              = 12                # CHECK THIS (should be PWM compatible)
-GPIO_MOTOR_IN2              = 13                # CHECK THIS (should be PWM compatible)
+GPIO_MOTOR_IN1              = 12                        # CHECK THIS (should be PWM compatible)
+GPIO_MOTOR_IN2              = 13                        # CHECK THIS (should be PWM compatible)
+pi_gpio                     = pigpio.pi()
 
 # Define global port handler
 portHandler = PortHandler(DEVICENAME)
@@ -183,7 +184,6 @@ def init_robot():
     set_pose(phi_rad=0, theta_rad=0)
 
     # Set up GPIO 
-    pi_gpio = pigpio.pi()
     pi_gpio.set_mode(GPIO_LIGHT, pigpio.OUTPUT)
     pi_gpio.set_mode(GPIO_MOTOR_IN1, pigpio.OUTPUT)
     pi_gpio.set_mode(GPIO_MOTOR_IN2, pigpio.OUTPUT)
