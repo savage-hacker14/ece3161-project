@@ -119,6 +119,11 @@ while True:
             cv2.putText(image, "Tracking: OFF", (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COL_RED, 2)
             pi_gpio.write(GPIO_LIGHT, MODE_DISABLE)
 
+
+        # Fire turret when ENTER key is pressed
+        if cv2.waitKey(1) == ord('f') and TRACKING:
+            fire_turret()
+
         # Show final image in window
         cv2.imshow("ArUco Detection", image)
 

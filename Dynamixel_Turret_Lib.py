@@ -75,8 +75,8 @@ SHOULDER_OFFSET             = 2047              # [encoder counts], 180 deg
 
 # Define GPIO pins and global GPIO object
 GPIO_LIGHT                  = 18
-GPIO_MOTOR_IN1              = 12                        # CHECK THIS (should be PWM compatible)
-GPIO_MOTOR_IN2              = 13                        # CHECK THIS (should be PWM compatible)
+GPIO_MOTOR_IN1              = 24                        # should be PWM compatible
+GPIO_MOTOR_IN2              = 23                        # should be PWM compatible
 pi_gpio                     = pigpio.pi()
 
 # Define global port handler
@@ -235,4 +235,11 @@ def fire_turret():
     Spin the NXT motor ~1 rotation to fire the loaded ball and 
     to reload the mechanism 
     """
+    # Spin motor backward (check what direction this is)
+    pi_gpio.write(GPIO_MOTOR_IN1, MODE_DISABLE)
+    pi_gpio.write(GPIO_MOTOR_IN2, MODE_ENABLE)
+    time.sleep(0.5)
+    pi_gpio.write(GPIO_MOTOR_IN1, MODE_DISABLE)
+    pi_gpio.write(GPIO_MOTOR_IN2, MODE_DISABLE)
+    
 
