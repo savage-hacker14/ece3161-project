@@ -41,6 +41,7 @@ ADDR_MX_CCW_LIMIT          = 8
 ADDR_MX_GOAL_POSITION      = 30
 ADDR_MX_PRESENT_POSITION   = 36
 ADDR_MX_LED                = 25
+ADDR_MX_P_GAIN             = 28
 
 # Protocol version
 PROTOCOL_VERSION           = 1.0                # Our Dynamixels use Protocol 1.0
@@ -179,6 +180,10 @@ def init_robot():
     # Enable torque mode for both joints
     _write(1, DXL_BODY_ID, ADDR_MX_TORQUE_ENABLE, MODE_ENABLE)
     _write(1, DXL_SHOULDER_ID, ADDR_MX_TORQUE_ENABLE, MODE_ENABLE)
+
+    # Set P gain for more gentle movement (original gain P = 32)
+    _write(2, DXL_BODY_ID, ADDR_MX_P_GAIN, 4)
+    _write(2, DXL_SHOULDER_ID, ADDR_MX_P_GAIN, 4)
 
     # Go to neutral position (phi = 0, theta = pi rad)
     set_pose(phi_rad=0, theta_rad=0)
