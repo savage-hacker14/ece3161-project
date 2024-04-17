@@ -101,12 +101,12 @@ DIST_OFFSET = 0.1397 # m, x distance from camera center to shooter
 V0          = np.sqrt(2 * G * HMAX)
 MIN_RANGE   = 0.5    # m
 MAX_RANGE   = (V0**2) / G
-SHOULDER_LOOKUP = {0.8128: 0, 
-                   0.9271: 15 * DEG_TO_RAD,
-                   1.2827: 30 * DEG_TO_RAD, 
-                   1.2192: 45 * DEG_TO_RAD,
-                   0.9398: 60 * DEG_TO_RAD,
-                   0.3810: 80 * DEG_TO_RAD}
+SHOULDER_LOOKUP = {0.9144: 0, 
+                   1.3970: 15 * DEG_TO_RAD,
+                   2.0320: 30 * DEG_TO_RAD, 
+                   2.3368: 45 * DEG_TO_RAD,
+                   1.9812: 60 * DEG_TO_RAD,
+                   0.4191: 80 * DEG_TO_RAD}
 
 # Custom functions
 def _error_handler(dxl_comm_result, dxl_error):
