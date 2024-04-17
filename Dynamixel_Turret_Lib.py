@@ -24,6 +24,9 @@ else:
 # Import main Dynamixel SDK
 from dynamixel_sdk import *
 
+# Import rotary encoder library
+import rotary_encoder
+
 # Import math libraries
 import math
 import numpy as np
@@ -61,6 +64,7 @@ else:
 
 # Define encoder resolution and torque mode
 ENCODER_RES                 = 4095
+ENCODER_NXT_RES             = 180
 MODE_ENABLE                 = 1                 # Value for enabling the torque
 MODE_DISABLE                = 0                 # Value for disabling the torque
 
@@ -275,9 +279,18 @@ def fire_turret():
     to reload the mechanism 
     """
     # Spin motor backward (check what direction this is)
-    pi_gpio.write(GPIO_MOTOR_IN1, MODE_DISABLE)
-    pi_gpio.write(GPIO_MOTOR_IN2, MODE_ENABLE)
-    time.sleep(0.5)
+    pos = 0
+    def callback(way):
+        global pos
+        pos += way
+
+    decoder = rotary_encoder.decoder(pi_gpio, 7, 8, callback)
+    # Rotate motor 1 rotation
+    while (pos <= ENCODER_NXT_RES):
+        pi_gpio.write(GPIO_MOTOR_IN1, MODE_DISABLE)
+        pi_gpio.write(GPIO_MOTOR_IN2, MODE_ENABLE)
+
+    # Stop rotation
     pi_gpio.write(GPIO_MOTOR_IN1, MODE_DISABLE)
     pi_gpio.write(GPIO_MOTOR_IN2, MODE_DISABLE)
     
@@ -320,5 +333,5 @@ def get_shoulder_angle_lookup_table(distance):
         x0, x1 = x_values[i - 1], x_values[i]
         y0, y1 = y_values[i - 1], y_values[i]
         # Perform linear interpolation
-        return y0 + (y1 - y0) * (x - x0) / (x1 - x0)
+        return y0 + (y1 - y0) * (distance - x0) / (x1 - x0)
 
