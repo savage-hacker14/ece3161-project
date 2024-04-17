@@ -101,7 +101,8 @@ while True:
 
                 # Set shoulder position
                 if (TRACKING and at_goal_pos(DXL_BODY_ID)):
-                    phi = get_shoulder_angle(d)
+                    d_m = d / 1000
+                    phi = get_shoulder_angle(d_m)
                     set_position(DXL_SHOULDER_ID, phi)
 
                 # Fire once at goal turret angle
