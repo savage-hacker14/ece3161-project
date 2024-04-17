@@ -41,6 +41,7 @@ ADDR_MX_CW_LIMIT           = 6
 ADDR_MX_CCW_LIMIT          = 8
 ADDR_MX_GOAL_POSITION      = 30
 ADDR_MX_PRESENT_POSITION   = 36
+ADDR_MX_MOVING             = 46
 ADDR_MX_LED                = 25
 ADDR_MX_P_GAIN             = 28
 
@@ -240,6 +241,14 @@ def set_pose(phi_rad, theta_rad):
 
     # Move shoulder joint
     set_position(DXL_SHOULDER_ID, theta_rad)
+
+# Check if motor is at goal position
+def at_goal_pos(motor_id):
+    """
+    This function reads the correct memory address of the motor to see if it has reached the goal position
+    """
+    is_moving = _read(1, motor_id, ADDR_MX_MOVING)
+    return is_moving == 0
 
 
 # Turret firing methods

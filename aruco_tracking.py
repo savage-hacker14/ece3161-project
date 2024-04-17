@@ -93,14 +93,23 @@ while True:
                 tvec = tvec[0][0]
                 
                 # Convert to polar coordinates
-                tvec_polar = tvec_to_polar(tvec)
+                d, theta = tvec_to_polar(tvec)
                 
-                # Set shoulder position
+                # Set body position
                 if (TRACKING):
-                    set_position(DXL_BODY_ID, -tvec_polar[1])
+                    set_position(DXL_BODY_ID, -theta)
+
+                # Set shoulder position
+                if (TRACKING and at_goal_pos(DXL_BODY_ID)):
+                    phi = get_shoulder_angle(d)
+                    set_position(DXL_SHOULDER_ID, phi)
+
+                # Fire once at goal turret angle
+                if (TRACKING and at_goal_pos(DXL_SHOULDER_ID)):
+                    fire_turret()
 
                 # Printing distance on the image
-                cv2.putText(image, str(round(tvec_polar[0] / scale, 2)), (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COL_RED, 2)
+                cv2.putText(image, str(round(d / scale, 2)), (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COL_RED, 2)
                 #print("Marker detected! ID: {}, RVEC: {}, TVEC: {}".format(str(markerID), rvec, tvec))
                 #print(f"TVEC: {tvec}")
                 #print(f"TVEC Polar: r={tvec_polar[0]}, theta={tvec_polar[1] * (180/math.pi)} deg")
