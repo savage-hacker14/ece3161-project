@@ -31,7 +31,7 @@ camera.set(4, 480)
 aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_250)
 aruco_params = cv2.aruco.DetectorParameters()
 detector = cv2.aruco.ArucoDetector(aruco_dict, aruco_params)
-markerLength = 54       # [mm] update based on cup tag size later 
+markerLength = 72       # [mm] update based on cup tag size later 
 
 print("Reading from camera...\n")
 
