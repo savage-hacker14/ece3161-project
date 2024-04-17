@@ -258,6 +258,16 @@ def at_goal_pos(motor_id):
     return is_moving == 0
 
 
+# LED Ring Light Functions
+def enable_ring_light():
+    """ Turn ON the LED ring light mounted on the camera """
+    pi_gpio.write(GPIO_LIGHT, MODE_ENABLE)
+
+def disable_ring_light():
+    """ Turn OFF the LED ring light mounted on the camera """
+    pi_gpio.write(GPIO_LIGHT, MODE_DISABLE)
+
+
 # Turret firing methods
 def fire_turret():
     """ 

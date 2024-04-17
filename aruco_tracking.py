@@ -134,10 +134,10 @@ while True:
         # Add tracking mode text to top left corner of frame - ONLY WHEN TARGET IS DETECTED
         if (TRACKING):
             cv2.putText(image, "Tracking: ON", (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COL_GREEN, 2)
-            pi_gpio.write(GPIO_LIGHT, MODE_ENABLE)
+            enable_ring_light()
         else:
             cv2.putText(image, "Tracking: OFF", (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COL_RED, 2)
-            pi_gpio.write(GPIO_LIGHT, MODE_DISABLE)
+            disable_ring_light()
 
 
         # Fire turret when ENTER key is pressed
@@ -155,4 +155,5 @@ while True:
 print("Camera terminated. Finished reading!\n")
 camera.release()
 cv2.destroyAllWindows()
-pi_gpio.write(GPIO_LIGHT, MODE_DISABLE)
+disable_ring_light()
+pi_gpio.stop()
