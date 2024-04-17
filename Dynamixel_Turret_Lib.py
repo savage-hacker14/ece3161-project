@@ -24,8 +24,9 @@ else:
 # Import main Dynamixel SDK
 from dynamixel_sdk import *
 
-# Import math library
+# Import math libraries
 import math
+import numpy as np
 
 # Import GPIO library
 #import RPi.GPIO as GPIO
@@ -86,6 +87,12 @@ portHandler = PortHandler(DEVICENAME)
 # Define global packet handler
 packetHandler = PacketHandler(PROTOCOL_VERSION)
 
+# Kinematics variables
+G           = 9.81 # m/s^2
+#v0=14.27476 # ft/s
+HMAX        =  0.9652 # m, maximum height ball reaches when shot straight up
+V0          = np.sqrt(2 * G * HMAX)
+MAX_RANGE   = (V0**2) / G
 
 
 # Custom functions
@@ -247,4 +254,18 @@ def fire_turret():
     pi_gpio.write(GPIO_MOTOR_IN1, MODE_DISABLE)
     pi_gpio.write(GPIO_MOTOR_IN2, MODE_DISABLE)
     
+
+def get_shoulder_angle(distance): # make sure distance input is in m
+    """
+    This function computes the turret angle in order to shoot the ball into the cup
+    """
+    if distance > MAX_RANGE:
+        print("OBJECT OUT OF RANGE")
+    else:
+        theta_rad = 0.5 * np.arcsin((distance * G) / V0**2) # returns in radians
+        # will likely want to take the larger of two possible solutions (so we enter the cup at a larger angle wrt ground)
+        if theta_rad < math.pi / 4: # an angle of 45 will ALWAYS get us max range.
+            theta_rad = math.pi/2 - theta_rad
+        
+    return theta_rad
 
