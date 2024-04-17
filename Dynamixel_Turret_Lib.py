@@ -270,19 +270,15 @@ def get_shoulder_angle(distance): # make sure distance input is in m
     """
     This function computes the turret angle in order to shoot the ball into the cup
     """
-    def initial_theta():
-        distance = distance - DIST_OFFSET
-        if distance > MAX_RANGE or distance < MIN_RANGE:
-            raise ValueError("OBJECT OUT OF RANGE")
-        else:
-            theta_rad = 0.5 * np.arcsin((distance * G) / V0**2) # returns in radians
-            # will likely want to take the larger of two possible solutions (so we enter the cup at a larger angle wrt ground)
-            if theta_rad < math.pi / 4: # an angle of 45 will ALWAYS get us max range.
-                theta_rad = math.pi/2 - theta_rad
-            
-        return theta_rad
-    
-    theta_rad = initial_theta()
+    distance = distance - DIST_OFFSET
+    if distance > MAX_RANGE or distance < MIN_RANGE:
+        raise ValueError("OBJECT OUT OF RANGE")
+    else:
+        theta_rad = 0.5 * np.arcsin((distance * G) / V0**2) # returns in radians
+        # will likely want to take the larger of two possible solutions (so we enter the cup at a larger angle wrt ground)
+        if theta_rad < math.pi / 4: # an angle of 45 will ALWAYS get us max range.
+            theta_rad = math.pi/2 - theta_rad
+        
     refined_distance=distance-DIST_OFFSET*np.cos(theta_rad)
     theta_rad=0.5*np.arcsin((refined_distance*G)/V0**2)
     theta_new=theta_rad*(180/np.pi)
