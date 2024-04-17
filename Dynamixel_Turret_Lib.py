@@ -90,13 +90,19 @@ packetHandler = PacketHandler(PROTOCOL_VERSION)
 
 # Kinematics variables
 G           = 9.81 # m/s^2
+DEG_TO_RAD  = math.pi / 180
 #v0=14.27476 # ft/s
 HMAX        = 0.9652 # m, maximum height ball reaches when shot straight up
 DIST_OFFSET = 0.1397 # m, x distance from camera center to shooter
 V0          = np.sqrt(2 * G * HMAX)
 MIN_RANGE   = 0.5    # m
 MAX_RANGE   = (V0**2) / G
-
+SHOULDER_LOOKUP = {0.8128: 0, 
+                   0.9271: 15 * DEG_TO_RAD,
+                   1.2827: 30 * DEG_TO_RAD, 
+                   1.2192: 45 * DEG_TO_RAD,
+                   0.9398: 60 * DEG_TO_RAD,
+                   0.3810: 80 * DEG_TO_RAD}
 
 # Custom functions
 def _error_handler(dxl_comm_result, dxl_error):
@@ -288,4 +294,19 @@ def get_shoulder_angle(distance): # make sure distance input is in m
     return theta_new
     
 
+def get_shoulder_angle_lookup_table(distance):
+    # x_values: Distance (keys)
+    # y_values: Shoulder angle (values)
+    x_values  = SHOULDER_LOOKUP.keys()
+    y_values = SHOULDER_LOOKUP.values()
+    i = np.searchsorted(x_values, distance)
+    if i == 0:
+        return y_values[0]
+    elif i == len(x_values):
+        return y_values[-1]
+    else:
+        x0, x1 = x_values[i - 1], x_values[i]
+        y0, y1 = y_values[i - 1], y_values[i]
+        # Perform linear interpolation
+        return y0 + (y1 - y0) * (x - x0) / (x1 - x0)
 

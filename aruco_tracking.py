@@ -104,7 +104,8 @@ while True:
                 if (TRACKING and at_goal_pos(DXL_BODY_ID)):
                     d_m = d / 1000
                     try:
-                        phi = get_shoulder_angle(d_m)
+                        #phi = get_shoulder_angle(d_m)
+                        phi = get_shoulder_angle_lookup_table(d_m)
                         print(f"d: {d_m} m, phi: {phi * 180/math.pi} deg")
                         set_position(DXL_SHOULDER_ID, phi)
                     except ValueError as e:
