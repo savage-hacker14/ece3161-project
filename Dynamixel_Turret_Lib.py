@@ -281,9 +281,9 @@ def get_shoulder_angle(distance): # make sure distance input is in m
         
     refined_distance=distance-DIST_OFFSET*np.cos(theta_rad)
     theta_rad=0.5*np.arcsin((refined_distance*G)/V0**2)
-    theta_new=theta_rad*(180/np.pi)
+    theta_new=theta_rad
     if theta_new < math.pi / 4: #an angle of 45 will ALWAYS get us max range.
-        theta_new = math.pi / 2- theta_new
+        theta_new = math.pi / 2 - theta_new
 
     return theta_new
     
