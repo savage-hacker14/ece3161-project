@@ -91,7 +91,7 @@ while True:
                 rvec, tvec, _ = cv2.aruco.estimatePoseSingleMarkers(markerCorner, markerLength, cameraMatrix, distCoeffs)
                 rvec = rvec[0][0]
                 tvec = tvec[0][0]
-                
+
                 # Convert to polar coordinates
                 d, theta = tvec_to_polar(tvec)
                 
@@ -106,8 +106,9 @@ while True:
                     set_position(DXL_SHOULDER_ID, phi)
 
                 # Fire once at goal turret angle
-                if (TRACKING and at_goal_pos(DXL_SHOULDER_ID)):
+                if (TRACKING and at_goal_pos(DXL_SHOULDER_ID) and not already_fired):
                     fire_turret()
+                    already_fired = True
 
                 # Printing distance on the image
                 cv2.putText(image, str(round(d / scale, 2)), (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COL_RED, 2)
@@ -120,6 +121,7 @@ while True:
                 TRACKING = not TRACKING
         else:
             TRACKING = False
+            already_fired = False       # Reset already fired flag
 
         # Add tracking mode text to top left corner of frame - ONLY WHEN TARGET IS DETECTED
         if (TRACKING):
