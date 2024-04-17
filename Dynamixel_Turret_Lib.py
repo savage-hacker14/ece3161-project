@@ -90,7 +90,8 @@ packetHandler = PacketHandler(PROTOCOL_VERSION)
 # Kinematics variables
 G           = 9.81 # m/s^2
 #v0=14.27476 # ft/s
-HMAX        =  0.9652 # m, maximum height ball reaches when shot straight up
+HMAX        = 0.9652 # m, maximum height ball reaches when shot straight up
+DIST_OFFSET = 0.1397 # m, x distance from camera center to shooter
 V0          = np.sqrt(2 * G * HMAX)
 MAX_RANGE   = (V0**2) / G
 
@@ -259,6 +260,7 @@ def get_shoulder_angle(distance): # make sure distance input is in m
     """
     This function computes the turret angle in order to shoot the ball into the cup
     """
+    distance = distance - DIST_OFFSET
     if distance > MAX_RANGE:
         print("OBJECT OUT OF RANGE")
     else:
