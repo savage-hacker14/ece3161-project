@@ -39,9 +39,10 @@ print("Reading from camera...\n")
 i = 0
 
 # Define tracking status (as a boolean)
-TRACKING  = False
-COL_RED   = (0, 0, 255)       # BGR format
-COL_GREEN = (0, 255, 0)
+TRACKING  		= False
+already_fired 	= False
+COL_RED   		= (0, 0, 255)       # BGR format
+COL_GREEN 		= (0, 255, 0)
 
 # ** Scaling factor testing
 USE_SCALING = False
@@ -102,8 +103,12 @@ while True:
                 # Set shoulder position
                 if (TRACKING and at_goal_pos(DXL_BODY_ID)):
                     d_m = d / 1000
-                    phi = get_shoulder_angle(d_m)
-                    set_position(DXL_SHOULDER_ID, phi)
+                    try:
+                        phi = get_shoulder_angle(d_m)
+                        print(f"d: {d_m} m, phi: {phi * 180/math.pi} deg")
+                        set_position(DXL_SHOULDER_ID, phi)
+                    except ValueError as e:
+                        raise e
 
                 # Fire once at goal turret angle
                 if (TRACKING and at_goal_pos(DXL_SHOULDER_ID) and not already_fired):
@@ -111,7 +116,7 @@ while True:
                     already_fired = True
 
                 # Printing distance on the image
-                cv2.putText(image, str(round(d / scale, 2)), (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COL_RED, 2)
+                cv2.putText(image, f"{round(d / 1000, 2)} m", (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COL_RED, 2)
                 #print("Marker detected! ID: {}, RVEC: {}, TVEC: {}".format(str(markerID), rvec, tvec))
                 #print(f"TVEC: {tvec}")
                 #print(f"TVEC Polar: r={tvec_polar[0]}, theta={tvec_polar[1] * (180/math.pi)} deg")
@@ -119,6 +124,8 @@ while True:
             # Enable/disable tracking via space bar (ONLY if a tag is detected)
             if cv2.waitKey(1) == ord(' '):
                 TRACKING = not TRACKING
+                if (not TRACKING):
+                    already_fired = False
         else:
             TRACKING = False
             already_fired = False       # Reset already fired flag

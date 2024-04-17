@@ -94,6 +94,7 @@ G           = 9.81 # m/s^2
 HMAX        = 0.9652 # m, maximum height ball reaches when shot straight up
 DIST_OFFSET = 0.1397 # m, x distance from camera center to shooter
 V0          = np.sqrt(2 * G * HMAX)
+MIN_RANGE   = 0.5    # m
 MAX_RANGE   = (V0**2) / G
 
 
@@ -270,8 +271,8 @@ def get_shoulder_angle(distance): # make sure distance input is in m
     This function computes the turret angle in order to shoot the ball into the cup
     """
     distance = distance - DIST_OFFSET
-    if distance > MAX_RANGE:
-        print("OBJECT OUT OF RANGE")
+    if distance > MAX_RANGE or distance < MIN_RANGE:
+        raise ValueError("OBJECT OUT OF RANGE")
     else:
         theta_rad = 0.5 * np.arcsin((distance * G) / V0**2) # returns in radians
         # will likely want to take the larger of two possible solutions (so we enter the cup at a larger angle wrt ground)
