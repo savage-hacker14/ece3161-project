@@ -279,8 +279,10 @@ def fire_turret():
     to reload the mechanism 
     """
     # Spin motor backward (check what direction this is)
+    global pos
     pos = 0
     def callback(way):
+        global pos
         pos += way
 
     decoder = rotary_encoder.decoder(pi_gpio, 7, 8, callback)
