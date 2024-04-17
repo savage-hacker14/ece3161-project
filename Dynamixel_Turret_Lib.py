@@ -297,8 +297,10 @@ def get_shoulder_angle(distance): # make sure distance input is in m
 def get_shoulder_angle_lookup_table(distance):
     # x_values: Distance (keys)
     # y_values: Shoulder angle (values)
-    x_values = np.array(SHOULDER_LOOKUP.keys())
-    y_values = np.array(SHOULDER_LOOKUP.values())
+    x_values = np.array(sorted(SHOULDER_LOOKUP.keys()))
+    y_values = np.array(sorted(SHOULDER_LOOKUP.values()))
+    print(f"x: {x_values}")
+    print(f"y: {y_values}")
     i = np.searchsorted(x_values, distance)
     if i == 0:
         return y_values[0]
