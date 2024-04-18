@@ -284,11 +284,11 @@ def fire_turret():
     def callback(way):
         global pos
         pos += way
-        print(f"Pos: {pos}")
+        #print(f"Pos: {pos}")
 
     decoder = rotary_encoder.decoder(pi_gpio, 7, 8, callback)
     # Rotate motor 1 rotation (should be 180 ticks, seems to be a bit less)
-    while (pos <= 145):
+    while (pos < 146):
         pi_gpio.write(GPIO_MOTOR_IN1, MODE_DISABLE)
         pi_gpio.write(GPIO_MOTOR_IN2, MODE_ENABLE)
 
