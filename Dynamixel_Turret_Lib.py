@@ -96,17 +96,21 @@ packetHandler = PacketHandler(PROTOCOL_VERSION)
 G           = 9.81 # m/s^2
 DEG_TO_RAD  = math.pi / 180
 #v0=14.27476 # ft/s
-HMAX        = 0.9652 # m, maximum height ball reaches when shot straight up
-DIST_OFFSET = 0.1397 # m, x distance from camera center to shooter
+HMAX        = 1.0541         #  m, maximum height ball reaches when shot straight up
+DIST_X_OFFSET = 0.1016 # m, x distance from camera center to shooter
+DIST_Y_OFFSET = 0 # m
 V0          = np.sqrt(2 * G * HMAX)
 MIN_RANGE   = 0.5    # m
 MAX_RANGE   = (V0**2) / G
-SHOULDER_LOOKUP = {0.9144: 0, 
-                   1.3970: 15 * DEG_TO_RAD,
-                   2.0320: 30 * DEG_TO_RAD, 
-                   2.3368: 45 * DEG_TO_RAD,
-                   1.9812: 60 * DEG_TO_RAD,
-                   0.4191: 80 * DEG_TO_RAD}
+SHOULDER_LOOKUP = {0.8636: 0, 
+                   1.4478: 15 * DEG_TO_RAD,
+                   2.2098: 30 * DEG_TO_RAD, 
+                   2.3114: 45 * DEG_TO_RAD,
+                   1.9050: 60 * DEG_TO_RAD,
+                   0.8636: 80 * DEG_TO_RAD}
+SHOULDER_LOOKUP = dict(sorted(SHOULDER_LOOKUP.items()))     # Sorted by key for look-up table
+n_firings   = 0      # Total number of firings
+
 
 # Custom functions
 def _error_handler(dxl_comm_result, dxl_error):
@@ -284,25 +288,60 @@ def fire_turret():
     def callback(way):
         global pos
         pos += way
-        #print(f"Pos: {pos}")
+        print(f"Pos: {pos}")
 
     decoder = rotary_encoder.decoder(pi_gpio, 7, 8, callback)
-    # Rotate motor 1 rotation (should be 180 ticks, seems to be a bit less)
-    while (pos < 146):
-        pi_gpio.write(GPIO_MOTOR_IN1, MODE_DISABLE)
-        pi_gpio.write(GPIO_MOTOR_IN2, MODE_ENABLE)
+    p_control = False
+    if (p_control):
+        # Thought this would improve rotation precision, but it only gets jerky at the end
+        # DO NOT USE
+        # Rotate motor 1 rotation (should be 180 ticks, seems to be a bit less)
+        goal_pos = 146
+        freq = 5000
+        pi_gpio.set_PWM_frequency(GPIO_MOTOR_IN1, freq)
+        pi_gpio.write(GPIO_MOTOR_IN2, MODE_DISABLE)
+        while (pos < goal_pos):
+            error = goal_pos - pos
+            duty = 200 * error/goal_pos + 55
+            freq = 1000 
+            
+            #pi_gpio.set_PWM_dutycycle(GPIO_MOTOR_IN1, duty)
+            pi_gpio.set_PWM_dutycycle(GPIO_MOTOR_IN2, duty)
+            #pi_gpio.write(GPIO_MOTOR_IN1, MODE_DISABLE)
+            #pi_gpio.write(GPIO_MOTOR_IN2, MODE_ENABLE)
 
-    # Stop rotation
-    decoder.cancel()
-    pi_gpio.write(GPIO_MOTOR_IN1, MODE_DISABLE)
-    pi_gpio.write(GPIO_MOTOR_IN2, MODE_DISABLE)
+        # Stop rotation
+        decoder.cancel()
+        pi_gpio.set_PWM_frequency(GPIO_MOTOR_IN2, 0)
+        pi_gpio.write(GPIO_MOTOR_IN1, MODE_DISABLE)
+        pi_gpio.write(GPIO_MOTOR_IN2, MODE_DISABLE)
+    else:
+        # This method with just fixed speed seems better
+        # Every few firings, rotate the motor a bit less
+#         global n_firings
+#         if (n_firings % 4 == 0 and n_firings > 0):
+#             goal_pos = 144
+#         else:
+#             goal_pos = 145
+        goal_pos = 144
+            
+        while (pos < goal_pos):
+            pi_gpio.write(GPIO_MOTOR_IN1, MODE_DISABLE)
+            pi_gpio.write(GPIO_MOTOR_IN2, MODE_ENABLE)
+
+        # Stop rotation
+        decoder.cancel()
+        pi_gpio.write(GPIO_MOTOR_IN1, MODE_DISABLE)
+        pi_gpio.write(GPIO_MOTOR_IN2, MODE_DISABLE)
+    
+    #n_firings += 1
     
 
 def get_shoulder_angle(distance): # make sure distance input is in m
     """
     This function computes the turret angle in order to shoot the ball into the cup
     """
-    distance = distance - DIST_OFFSET
+    distance = distance - DIST_X_OFFSET
     if distance > MAX_RANGE or distance < MIN_RANGE:
         raise ValueError("OBJECT OUT OF RANGE")
     else:
@@ -311,7 +350,7 @@ def get_shoulder_angle(distance): # make sure distance input is in m
         if theta_rad < math.pi / 4: # an angle of 45 will ALWAYS get us max range.
             theta_rad = math.pi/2 - theta_rad
         
-    refined_distance=distance-DIST_OFFSET*np.cos(theta_rad)
+    refined_distance=distance-DIST_X_OFFSET*np.cos(theta_rad)
     theta_rad=0.5*np.arcsin((refined_distance*G)/V0**2)
     theta_new=theta_rad
     if theta_new < math.pi / 4: #an angle of 45 will ALWAYS get us max range.
@@ -323,8 +362,8 @@ def get_shoulder_angle(distance): # make sure distance input is in m
 def get_shoulder_angle_lookup_table(distance):
     # x_values: Distance (keys)
     # y_values: Shoulder angle (values)
-    x_values = np.array(sorted(SHOULDER_LOOKUP.keys()))
-    y_values = np.array(sorted(SHOULDER_LOOKUP.values()))
+    x_values = np.array(list(SHOULDER_LOOKUP.keys()))
+    y_values = np.array(list(SHOULDER_LOOKUP.values()))
     print(f"x: {x_values}")
     print(f"y: {y_values}")
     i = np.searchsorted(x_values, distance)

@@ -31,7 +31,7 @@ camera.set(4, 480)
 aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_250)
 aruco_params = cv2.aruco.DetectorParameters()
 detector = cv2.aruco.ArucoDetector(aruco_dict, aruco_params)
-markerLength = 72       # [mm] update based on cup tag size later 
+markerLength = 94       # [mm] update based on cup tag size later 
 
 print("Reading from camera...\n")
 
@@ -104,8 +104,8 @@ while True:
                 if (TRACKING and at_goal_pos(DXL_BODY_ID)):
                     d_m = d / 1000
                     try:
-                        #phi = get_shoulder_angle(d_m)
-                        phi = get_shoulder_angle_lookup_table(d_m)
+                        phi = get_shoulder_angle(d_m)
+                        #phi = get_shoulder_angle_lookup_table(d_m)
                         print(f"d: {d_m} m, phi: {phi * 180/math.pi} deg")
                         set_position(DXL_SHOULDER_ID, phi)
                     except ValueError as e:
