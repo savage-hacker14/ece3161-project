@@ -96,12 +96,13 @@ packetHandler = PacketHandler(PROTOCOL_VERSION)
 G           = 9.81 # m/s^2
 DEG_TO_RAD  = math.pi / 180
 #v0=14.27476 # ft/s
-HMAX        = 1.0541         #  m, maximum height ball reaches when shot straight up
+HMAX        = 1.04 #1.0541         #  m, maximum height ball reaches when shot straight up
 DIST_X_OFFSET = 0.1016 # m, x distance from camera center to shooter
 DIST_Y_OFFSET = 0 # m
 V0          = np.sqrt(2 * G * HMAX)
 MIN_RANGE   = 0.5    # m
 MAX_RANGE   = (V0**2) / G
+CUP_RADIUS  = 0.0445
 SHOULDER_LOOKUP = {0.8636: 0, 
                    1.4478: 15 * DEG_TO_RAD,
                    2.2098: 30 * DEG_TO_RAD, 
@@ -287,7 +288,7 @@ def fire_turret():
     pos = 0
     def callback(way):
         global pos
-        pos += way
+        pos += abs(way)
         print(f"Pos: {pos}")
 
     decoder = rotary_encoder.decoder(pi_gpio, 7, 8, callback)
@@ -318,23 +319,23 @@ def fire_turret():
     else:
         # This method with just fixed speed seems better
         # Every few firings, rotate the motor a bit less
-#         global n_firings
-#         if (n_firings % 4 == 0 and n_firings > 0):
-#             goal_pos = 144
-#         else:
-#             goal_pos = 145
-        goal_pos = 144
+        global n_firings
+        if (n_firings % 4 == 0 and n_firings > 0):
+            goal_pos = 144
+        else:
+            goal_pos = 145
+        #goal_pos = 145
             
         while (pos < goal_pos):
-            pi_gpio.write(GPIO_MOTOR_IN1, MODE_DISABLE)
-            pi_gpio.write(GPIO_MOTOR_IN2, MODE_ENABLE)
+            pi_gpio.write(GPIO_MOTOR_IN1, MODE_ENABLE)
+            pi_gpio.write(GPIO_MOTOR_IN2, MODE_DISABLE)
 
         # Stop rotation
         decoder.cancel()
         pi_gpio.write(GPIO_MOTOR_IN1, MODE_DISABLE)
         pi_gpio.write(GPIO_MOTOR_IN2, MODE_DISABLE)
     
-    #n_firings += 1
+    n_firings += 1
     
 
 def get_shoulder_angle(distance): # make sure distance input is in m

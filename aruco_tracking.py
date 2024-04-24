@@ -102,19 +102,21 @@ while True:
 
                 # Set shoulder position
                 if (TRACKING and at_goal_pos(DXL_BODY_ID)):
-                    d_m = d / 1000
+                    d_m = (d + CUP_RADIUS) / 1000
                     try:
                         phi = get_shoulder_angle(d_m)
                         #phi = get_shoulder_angle_lookup_table(d_m)
                         print(f"d: {d_m} m, phi: {phi * 180/math.pi} deg")
                         set_position(DXL_SHOULDER_ID, phi)
                     except ValueError as e:
-                        raise e
+                        print(e)
 
                 # Fire once at goal turret angle
                 if (TRACKING and at_goal_pos(DXL_SHOULDER_ID) and not already_fired):
+                    time.sleep(0.5)
                     fire_turret()
                     already_fired = True
+                    TRACKING = False
 
                 # Printing distance on the image
                 cv2.putText(image, f"{round(d / 1000, 2)} m", (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COL_RED, 2)
