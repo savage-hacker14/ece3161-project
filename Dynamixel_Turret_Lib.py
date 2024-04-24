@@ -263,8 +263,12 @@ def at_goal_pos(motor_id):
     """
     This function reads the correct memory address of the motor to see if it has reached the goal position
     """
-    is_moving = _read(1, motor_id, ADDR_MX_MOVING)
-    return is_moving == 0
+    is_moving_1 = _read(1, motor_id, ADDR_MX_MOVING)
+    goal_pos    = _read(2, motor_id, ADDR_MX_GOAL_POSITION)
+    present_pos = _read(2, motor_id, ADDR_MX_PRESENT_POSITION)
+    at_pos      = abs(goal_pos - present_pos) < 30
+    print(f"is_moving: {is_moving_1}, goal_pos: {goal_pos}, present_pos: {present_pos}, at_pos: {at_pos}")
+    return not is_moving_1 or at_pos
 
 
 # LED Ring Light Functions
@@ -289,7 +293,7 @@ def fire_turret():
     def callback(way):
         global pos
         pos += abs(way)
-        print(f"Pos: {pos}")
+        #print(f"Pos: {pos}")
 
     decoder = rotary_encoder.decoder(pi_gpio, 7, 8, callback)
     p_control = False

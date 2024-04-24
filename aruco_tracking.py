@@ -41,6 +41,7 @@ i = 0
 # Define tracking status (as a boolean)
 TRACKING  		= False
 already_fired 	= False
+d_lock          = 0
 COL_RED   		= (0, 0, 255)       # BGR format
 COL_GREEN 		= (0, 255, 0)
 
@@ -50,6 +51,9 @@ if (USE_SCALING):
     scale = 1400 / 279.4
 else:
     scale = 1
+    
+# Set HMAX for V0 calculation
+HMAX = float(input("What is HMAX: "))
     
 # Define function to convert tvec to polar coordinates
 # Axes: X - To the left of the camera (to the right in image frame)
@@ -99,14 +103,18 @@ while True:
                 # Set body position
                 if (TRACKING):
                     set_position(DXL_BODY_ID, -theta)
+                    at_pos = at_goal_pos(DXL_BODY_ID)
+                    print(f"at_goal_pos: {at_pos}")
+                    already_fired = False
 
                 # Set shoulder position
                 if (TRACKING and at_goal_pos(DXL_BODY_ID)):
-                    d_m = (d + CUP_RADIUS) / 1000
+                    #d_m = (d + CUP_RADIUS) / 1000
                     try:
-                        phi = get_shoulder_angle(d_m)
+                        phi = get_shoulder_angle(d_locked)
                         #phi = get_shoulder_angle_lookup_table(d_m)
-                        print(f"d: {d_m} m, phi: {phi * 180/math.pi} deg")
+                        print(f"Already fired: {already_fired}")
+                        print(f"d: {d_locked} m, phi: {phi * 180/math.pi} deg")
                         set_position(DXL_SHOULDER_ID, phi)
                     except ValueError as e:
                         print(e)
@@ -129,6 +137,9 @@ while True:
                 TRACKING = not TRACKING
                 if (not TRACKING):
                     already_fired = False
+                else:
+                    d_locked = (d + CUP_RADIUS) / 1000
+                    print("d_locked set!")
         else:
             TRACKING = False
             already_fired = False       # Reset already fired flag
